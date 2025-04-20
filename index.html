@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Proposal Generator</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --light-color: #ecf0f1;
+            --border-color: #bdc3c7;
+            --success-color: #27ae60;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .form-section {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        
+        .preview-section {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 100vh;
+            background-color: #f9f9f9;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin: 15px 0;
+            font-size: 1.3rem;
+        }label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        button {
+            cursor: pointer;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button.save-btn {
+            background-color: var(--success-color);
+        }
+        
+        button.save-btn:hover {
+            background-color: #219651;
+        }
+        
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .pricing-table th, .pricing-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .pricing-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .add-row-btn {
+            margin-bottom: 15px;
+        }
+        
+        /* Preview styles */
+        .proposal-preview {
+            background-color: white;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .proposal-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo-placeholder {
+            width: 150px;
+            height: 60px;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: #777;
+            border-radius: 4px;
+        }
+        
+        .proposal-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .proposal-title h2 {
+            font-size: 26px;
+            color: var(--primary-color);
+        }.proposal-section {
+            margin-bottom: 25px;
+        }
+        
+        .proposal-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .proposal-section p {
+            margin-bottom: 10px;
+        }
+        
+        .proposal-section ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .proposal-section strong {
+            font-weight: 600;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            background-color: #d4edda;
+            color: #155724;
+            display: none;
+        }
+        
+        /* Saved proposals dropdown */
+        .saved-proposals {
+            margin-bottom: 15px;
+        }
+        
+        #saved-proposal-list {
+            width: 70%;
+            margin-right: 10px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .form-section, .preview-section {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Input Form Section -->
+        <div class="form-section">
+            <h1>Client Proposal Generator</h1>
+            <div class="message" id="message"></div>
+            
+            <div class="saved-proposals">
+                <h2>Saved Proposals</h2>
+                <div style="display: flex;">
+                    <select id="saved-proposal-list">
+                        <option value="">Select a saved proposal</option>
+                    </select>
+                    <button id="load-proposal-btn">Load</button>
+                </div>
+            </div>
+            
+            <form id="proposal-form">
+                <div class="form-group">
+                    <label for="logo-text">Company Name (Logo Placeholder)</label>
+                    <input type="text" id="logo-text" placeholder="Your Company Name">
+                </div>
+                
+                <h2>Client Information</h2>
+                <div class="form-group">
+                    <label for="client-name">Client Name*</label>
+                    <input type="text" id="client-name" required placeholder="Enter client's name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="client-company">Client Company Name (Optional)</label>
+                    <input type="text" id="client-company" placeholder="Enter client's company name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="project-title">Project Title*</label>
+                    <input type="text" id="project-title" required placeholder="Enter project title">
+                </div>
+                
+                <h2>Project Details</h2>
+                <div class="form-group">
+                    <label for="services">Services Offered* (One per line or comma-separated)</label>
+                    <textarea id="services" required placeholder="Website Design, Logo Design, SEO Services"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="scope">Detailed Scope of Work*</label>
+                    <textarea id="scope" required placeholder="Describe in detail what each service includes..."></textarea>
+                </div>
+                
+                <h2>Timeline</h2>
+                <div class="form-group">
+                    <label for="start-date">Start Date*</label>
+                    <input type="date" id="start-date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="end-date">End Date*</label>
+                    <input type="date" id="end-date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="milestones">Milestones (Optional, one per line)</label>
+                    <textarea id="milestones" placeholder="Initial design review: 2 weeks after start&#10;First draft delivery: 4 weeks after start"></textarea>
+                </div>
+                
+                <h2>Pricing</h2>
+                <table class="pricing-table" id="pricing-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="Service name"></td>
+                            <td><input type="text" placeholder="₹0.00"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" id="add-price-row" class="add-row-btn">Add Price Item</button>
+                
+                <div class="form-group">
+                    <label for="terms">Terms & Conditions*</label>
+                    <textarea id="terms" required placeholder="Payment schedule, revision policy, etc."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="call-to-action">Call to Action/Signature Section*</label>
+                    <textarea id="call-to-action" required placeholder="To accept this proposal, please sign below or..."></textarea>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" id="generate-btn">Generate Proposal</button>
+                    <button type="button" id="save-btn" class="save-btn">Save Proposal</button>
+                    <button type="button" id="download-pdf-btn">Download as PDF</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Preview Section -->
+        <div class="preview-section">
+            <h1>Proposal Preview</h1>
+            <div class="proposal-preview" id="proposal-preview">
+                <div class="proposal-logo">
+                    <div class="logo-placeholder" id="logo-placeholder">COMPANY LOGO</div>
+                </div>
+                <div class="proposal-title">
+                    <h2>Client Proposal</h2>
+                    <p><strong>For:</strong> <span id="preview-client">Client Name</span></p>
+                    <p><strong>Project:</strong> <span id="preview-project">Project Title</span></p>
+                </div>
+                
+                <div class="proposal-section">
+                    <h3>Services Offered</h3>
+                    <ul id="preview-services">
+                        <li>Service items will appear here</li>
+                    </ul>
+                </div>
+                
+                <div class="proposal-section">
+                    <h3>Scope of Work</h3>
+                    <div id="preview-scope">Detailed scope description will appear here</div>
+                </div>
+                
+                <div class="proposal-section">
+                    <h3>Project Timeline</h3>
+                    <p><strong>Start Date:</strong> <span id="preview-start-date">MM/DD/YYYY</span></p>
+                    <p><strong>End Date:</strong> <span id="preview-end-date">MM/DD/YYYY</span></p>
+                    <div id="preview-milestones">
+                        <p>Project milestones will appear here</p>
+                    </div>
+                </div>
+                
+                <div class="proposal-section">
+                    <h3>Pricing</h3>
+                    <table class="pricing-table" id="preview-pricing">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Service Example</td>
+                                <td>₹0.00</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td id="preview-total">₹0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="proposal-section">
+                    <h3>Terms & Conditions</h3>
+                    <div id="preview-terms">Terms and conditions will appear here</div>
+                </div>
+                
+                <div class="proposal-section">
+                    <h3>Next Steps</h3>
+                    <div id="preview-cta">Call to action will appear here</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const form = document.getElementById('proposal-form');
+            const generateBtn = document.getElementById('generate-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            const addPriceRowBtn = document.getElementById('add-price-row');
+            const loadProposalBtn = document.getElementById('load-proposal-btn');
+            const savedProposalList = document.getElementById('saved-proposal-list');
+            const messageDiv = document.getElementById('message');
+            
+            // Initialize the pricing table with one row
+            addPriceRow();
+            
+            // Load saved proposals from localStorage
+            loadSavedProposalsList();
+            
+            // Live updates for logo text
+            document.getElementById('logo-text').addEventListener('input', function() {
+                const logoPlaceholder = document.getElementById('logo-placeholder');
+                logoPlaceholder.textContent = this.value || 'COMPANY LOGO';
+            });
+            
+            // Generate proposal
+            generateBtn.addEventListener('click', function() {
+                if (validateForm()) {
+                    generateProposal();
+                    showMessage('Proposal generated successfully!', 'success');
+                }
+            });
+            
+            // Save proposal to localStorage
+            saveBtn.addEventListener('click', function() {
+                if (validateForm()) {
+                    generateProposal();
+                    saveProposal();
+                }
+            });
+            
+            // Download as PDF
+            downloadPdfBtn.addEventListener('click', function() {
+                if (validateForm()) {
+                    generateProposal();
+                    downloadPdf();
+                }
+            });
+            
+            // Add a new row to the pricing table
+            addPriceRowBtn.addEventListener('click', function() {
+                addPriceRow();
+            });
+            
+            // Load a saved proposal
+            loadProposalBtn.addEventListener('click', function() {
+                const selectedValue = savedProposalList.value;
+                if (selectedValue) {
+                    loadProposal(selectedValue);
+                    showMessage('Proposal loaded successfully!', 'success');
+                }
+            });
+            
+            // Add a new row to the pricing table
+            function addPriceRow() {
+                const tbody = document.querySelector('#pricing-table tbody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = 
+                    <td><input type="text" placeholder="Service name"></td>
+                    <td><input type="text" placeholder="₹0.00"></td>
+                ;
+                tbody.appendChild(newRow);
+            }
+            
+            // Validate the form
+            function validateForm() {
+                const requiredFields = [
+                    'client-name',
+                    'project-title',
+                    'services',
+                    'scope',
+                    'start-date', 
+                    'end-date',
+                    'terms',
+                    'call-to-action'
+                ];
+                
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (!element.value.trim()) {
+                        element.style.borderColor = 'red';
+                        isValid = false;
+                    } else {
+                        element.style.borderColor = '';
+                    }
+                });
+                
+                if (!isValid) {
+                    showMessage('Please fill out all required fields', 'error');
+                }
+                
+                return isValid;
+            }
+            
+            // Generate the proposal preview
+            function generateProposal() {
+                // Client Info
+                document.getElementById('preview-client').textContent = document.getElementById('client-name').value;
+                if (document.getElementById('client-company').value) {
+                    document.getElementById('preview-client').textContent += ' - ' + document.getElementById('client-company').value;
+                }
+                document.getElementById('preview-project').textContent = document.getElementById('project-title').value;
+                
+                // Logo
+                document.getElementById('logo-placeholder').textContent = document.getElementById('logo-text').value || 'COMPANY LOGO';
+                
+                // Services
+                const servicesInput = document.getElementById('services').value;
+                const servicesList = document.getElementById('preview-services');
+                servicesList.innerHTML = '';
+                
+                const servicesArray = servicesInput.split(/[\n,]+/).filter(service => service.trim() !== '');
+                servicesArray.forEach(service => {
+                    const li = document.createElement('li');
+                    li.textContent = service.trim();
+                    servicesList.appendChild(li);
+                });
+                
+                // Scope
+                document.getElementById('preview-scope').innerHTML = document.getElementById('scope').value.replace(/\n/g, '<br>');
+                
+                // Timeline
+                const startDate = new Date(document.getElementById('start-date').value);
+                const endDate = new Date(document.getElementById('end-date').value);
+                
+                document.getElementById('preview-start-date').textContent = formatDate(startDate);
+                document.getElementById('preview-end-date').textContent = formatDate(endDate);
+                
+                // Milestones
+                const milestonesInput = document.getElementById('milestones').value;
+                const milestonesList = document.getElementById('preview-milestones');
+                
+                if (milestonesInput.trim()) {
+                    milestonesList.innerHTML = '<h4>Key Milestones:</h4><ul>';
+                    const milestonesArray = milestonesInput.split('\n').filter(milestone => milestone.trim() !== '');
+                    milestonesArray.forEach(milestone => {
+                        milestonesList.innerHTML += <li>${milestone.trim()}</li>;
+                    });
+                    milestonesList.innerHTML += '</ul>';
+                } else {
+                    milestonesList.innerHTML = '';
+                }
+                
+                // Pricing
+                const priceRows = document.querySelectorAll('#pricing-table tbody tr');
+                const previewPricing = document.querySelector('#preview-pricing tbody');
+                previewPricing.innerHTML = '';
+                
+                let total = 0;
+                
+                priceRows.forEach(row => {
+                    const serviceName = row.querySelector('td:first-child input').value;
+                    const priceText = row.querySelector('td:last-child input').value;
+                    
+                    if (serviceName || priceText) {
+                        // Extract numeric value from price text
+                        const priceNumeric = parseFloat(priceText.replace(/[^0-9.-]+/g, '')) || 0;
+                        total += priceNumeric;
+                        
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = 
+                            <td>₹{serviceName || 'Unnamed Service'}</td>
+                            <td>₹{formatPrice(priceNumeric)}</td>
+                        ;
+                        previewPricing.appendChild(tr);
+                    }
+                });
+                
+                document.getElementById('preview-total').textContent = formatPrice(total);
+                
+                // Terms and Call to Action
+                document.getElementById('preview-terms').innerHTML = document.getElementById('terms').value.replace(/\n/g, '<br>');
+                document.getElementById('preview-cta').innerHTML = document.getElementById('call-to-action').value.replace(/\n/g, '<br>');
+            }
+            
+            // Format date as MM/DD/YYYY
+            function formatDate(date) {
+                if (!(date instanceof Date) || isNaN(date)) {
+                    return 'Date not specified';
+                }
+                return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+            }
+            
+            // Format price as currency
+            function formatPrice(price) {
+                return '₹' + price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+            
+            // Save proposal to localStorage
+            function saveProposal() {
+                const proposal = getProposalData();
+                const proposalId = proposal_₹{Date.now()};
+                const proposalName = ₹{proposal.projectTitle} - ₹{formatDate(new Date())};
+                
+                // Save to localStorage
+                const savedProposals = JSON.parse(localStorage.getItem('savedProposals') || '{}');
+                savedProposals[proposalId] = {
+                    name: proposalName,
+                    data: proposal
+                };
+                
+                localStorage.setItem('savedProposals', JSON.stringify(savedProposals));
+                
+                // Update dropdown list  loadSavedProposalsList(); 
+                showMessage('Proposal saved successfully!', 'success');
+            }
+            
+            // Get proposal data from form
+            function getProposalData() {
+                // Get pricing data
+                const pricingRows = [];
+                document.querySelectorAll('#pricing-table tbody tr').forEach(row => {
+                    const service = row.querySelector('td:first-child input').value;
+                    const price = row.querySelector('td:last-child input').value;
+                    if (service || price) {
+                        pricingRows.push({ service, price });
+                    }
+                });
+                
+                return {
+                    companyName: document.getElementById('logo-text').value,
+                    clientName: document.getElementById('client-name').value,
+                    clientCompany: document.getElementById('client-company').value,
+                    projectTitle: document.getElementById('project-title').value,
+                    services: document.getElementById('services').value,
+                    scope: document.getElementById('scope').value,
+                    startDate: document.getElementById('start-date').value,
+                    endDate: document.getElementById('end-date').value,
+                    milestones: document.getElementById('milestones').value,
+                    pricing: pricingRows,
+                    terms: document.getElementById('terms').value,
+                    callToAction: document.getElementById('call-to-action').value
+                };
+            }
+            
+            // Load saved proposals list
+            function loadSavedProposalsList() {
+                const savedProposals = JSON.parse(localStorage.getItem('savedProposals') || '{}');
+                const selectElement = document.getElementById('saved-proposal-list');
+                
+                // Clear previous options except the first one
+                while (selectElement.options.length > 1) {
+                    selectElement.remove(1);
+                }
+                
+                // Add saved proposals to dropdown
+                for (const id in savedProposals) {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = savedProposals[id].name;
+                    selectElement.appendChild(option);
+                }
+            }
+             // Load a saved proposal
+            function loadProposal(proposalId) {
+                const savedProposals = JSON.parse(localStorage.getItem('savedProposals') || '{}');
+                const proposal = savedProposals[proposalId]?.data;
+                
+                if (!proposal) return;
+                
+                // Fill form with saved data
+                document.getElementById('logo-text').value = proposal.companyName || '';
+                document.getElementById('client-name').value = proposal.clientName || '';
+                document.getElementById('client-company').value = proposal.clientCompany || '';
+                document.getElementById('project-title').value = proposal.projectTitle || '';
+                document.getElementById('services').value = proposal.services || '';
+                document.getElementById('scope').value = proposal.scope || '';
+                document.getElementById('start-date').value = proposal.startDate || '';
+                document.getElementById('end-date').value = proposal.endDate || '';
+                document.getElementById('milestones').value = proposal.milestones || '';
+                document.getElementById('terms').value = proposal.terms || '';
+                document.getElementById('call-to-action').value = proposal.callToAction || '';
+                
+                // Handle pricing table
+                const pricingTable = document.querySelector('#pricing-table tbody');
+                pricingTable.innerHTML = '';
+                
+                if (proposal.pricing && proposal.pricing.length > 0) {
+                    proposal.pricing.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = 
+                            <td><input type="text" value="${item.service || ''}" placeholder="Service name"></td>
+                            <td><input type="text" value="₹{item.price || ''}" placeholder="₹0.00"></td>
+                        ;
+                        pricingTable.appendChild(row);
+                    });
+                } else {
+                    addPriceRow();
+                }
+                
+                // Generate preview
+                generateProposal();
+            }
+            
+            // Download as PDF
+            function downloadPdf() {
+                // Get proposal preview element
+                const element = document.getElementById('proposal-preview');
+                const projectTitle = document.getElementById('project-title').value || 'Client Proposal';
+                const fileName = ${projectTitle.replace(/\s+/g, '_')}_${formatDate(new Date()).replace(/\//g, '-')}.pdf;
+                
+                // Clone element for PDF generation
+                const clonedElement = element.cloneNode(true);
+                
+                // Configure html2pdf options
+                const options = {
+                    margin: 10,
+                    filename: fileName,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                
+                // Generate PDF
+                html2pdf().from(clonedElement).set(options).save();
+                showMessage('Downloading PDF...', 'success');
+            }
+            
+            // Show message
+            function showMessage(text, type = 'success') {
+                const messageDiv = document.getElementById('message');
+                messageDiv.textContent = text;
+                messageDiv.style.display = 'block';
+                
+                if (type === 'error') {
+                    messageDiv.style.backgroundColor = '#f8d7da';
+                    messageDiv.style.color = '#721c24';
+                } else {
+                    messageDiv.style.backgroundColor = '#d4edda';
+                    messageDiv.style.color = '#155724';
+                }
+                
+                // Hide message after 3 seconds
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
